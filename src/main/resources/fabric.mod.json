@@ -6,13 +6,12 @@
   "description": "Reads your balance from the sidebar scoreboard and /pay's it to a target account.",
   "authors": ["you"],
   "environment": "client",
-  "entrypoints": {
-    "client": ["com.balancepay.BalancePayClient"]
-  },
+  "mixins": [
+    { "config": "balancepay.mixins.json", "environment": "client" }
+  ],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "~1.21.4",
-    "java": ">=21",
-    "fabric-api": "*"
+    "fabricloader": ">=0.18.0",
+    "minecraft": "1.21.11",
+    "java": ">=21"
   }
 }
