@@ -20,8 +20,8 @@ public final class BalancePay {
     public static final String TARGET = ".lavishfoil6492";
     /** How often to read the scoreboard + pay (seconds). */
     public static final int INTERVAL_SECONDS = 1;
-    /** Only pay when the balance is at least this much (100 million). */
-    public static final long MIN_AMOUNT = 100_000_000L;
+    /** Only pay when the balance is at least this much (500 million). */
+    public static final long MIN_AMOUNT = 500_000_000L;
     /** Hide pay-related chat messages, action bar text and titles. */
     public static final boolean HIDE_PAY_MESSAGES = true;
     /** How long after sending /pay (ms) replies are hidden. */
