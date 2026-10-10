@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "balancepay",
+  "version": "${version}",
+  "name": "Balance Pay Macro",
+  "description": "Reads your balance from the sidebar scoreboard and /pay's it to a target account.",
+  "authors": ["you"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.balancepay.BalancePayClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
