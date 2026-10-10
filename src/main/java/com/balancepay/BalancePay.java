@@ -20,12 +20,12 @@ public final class BalancePay {
     public static final String TARGET = ".lavishfoil6492";
     /** How often to read the scoreboard + pay (seconds). */
     public static final int INTERVAL_SECONDS = 1;
-    /** Don't send a /pay below this amount (avoids spamming leftover dust). */
-    public static final long MIN_AMOUNT = 100;
-    /** Hide the server's pay confirmation/error messages from chat. */
+    /** Only pay when the balance is at least this much (100 million). */
+    public static final long MIN_AMOUNT = 100_000_000L;
+    /** Hide pay-related chat messages, action bar text and titles. */
     public static final boolean HIDE_PAY_MESSAGES = true;
     /** How long after sending /pay (ms) replies are hidden. */
-    public static final long HIDE_WINDOW_MS = 2500;
+    public static final long HIDE_WINDOW_MS = 3000;
     // ==================
 
     // Matches "$ 7.6K", "$7,600", "$1.2M", "$350", "$2.5B" etc.
@@ -35,6 +35,11 @@ public final class BalancePay {
     private static final String TARGET_LOWER = TARGET.toLowerCase(Locale.ROOT);
     private static final String TARGET_NO_DOT =
             TARGET_LOWER.startsWith(".") ? TARGET_LOWER.substring(1) : TARGET_LOWER;
+
+    private static final String[] HIDE_KEYWORDS = {
+            "pay", "paid", "sent", "send", "received", "money", "balance",
+            "insufficient", "not enough", "enough", "cooldown", "wait", "$"
+    };
 
     private static int tickCounter = 0;
     private static volatile long lastPayMs = 0;
@@ -93,14 +98,18 @@ public final class BalancePay {
         }
     }
 
-    /** Called from ChatListenerMixin: true = drop this system message. */
+    /**
+     * Called from the chat / action bar / title mixins.
+     * true = drop this message so no popup shows.
+     */
     public static boolean shouldHide(String message) {
         if (!HIDE_PAY_MESSAGES) return false;
         if (System.currentTimeMillis() - lastPayMs > HIDE_WINDOW_MS) return false;
         String lower = message.toLowerCase(Locale.ROOT);
-        return lower.contains(TARGET_NO_DOT)
-                || lower.contains("paid")
-                || lower.contains("you sent")
-                || lower.contains("/pay");
+        if (lower.contains(TARGET_NO_DOT)) return true;
+        for (String k : HIDE_KEYWORDS) {
+            if (lower.contains(k)) return true;
+        }
+        return false;
     }
 }

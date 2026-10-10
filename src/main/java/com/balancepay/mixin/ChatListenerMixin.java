@@ -10,9 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChatListener.class)
 public class ChatListenerMixin {
-    @Inject(method = "handleSystemMessage", at = @At("HEAD"), cancellable = true)
+    // Covers both normal system chat and overlay (action bar) system messages.
+    @Inject(method = "handleSystemMessage", at = @At("HEAD"), cancellable = true, require = 0)
     private void balancepay$hide(Component message, boolean overlay, CallbackInfo ci) {
-        if (!overlay && BalancePay.shouldHide(message.getString())) {
+        if (BalancePay.shouldHide(message.getString())) {
             ci.cancel();
         }
     }

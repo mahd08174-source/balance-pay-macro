@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "MinecraftMixin",
-    "ChatListenerMixin"
+    "ChatListenerMixin",
+    "GuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1
